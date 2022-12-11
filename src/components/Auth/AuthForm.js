@@ -20,33 +20,41 @@ const AuthForm = () => {
         const enteredPassword = passwordInputRef.current.value;
 
         setIsLoading(true);
-        if (isLogin) {
-            //
-        } else {
-            fetch(
-                `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: enteredEmail,
-                        password: enteredPassword,
-                        returnSecureToken: true
-                    })
-                }
-            ).then(res => {
+
+        let url;
+
+        if (isLogin)
+            url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`;
+        else
+            url = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: enteredEmail,
+                password: enteredPassword,
+                returnSecureToken: true
+            })
+        })
+            .then(res => {
                 setIsLoading(false);
                 if (res.ok) {
-                    // ...
+                    return res.json();
                 } else {
                     return res.json().then(data => {
                         const errorMessage =
                             data?.error?.message ?? 'Authentication failed!';
-                        alert(errorMessage);
+                        throw new Error(errorMessage);
                     });
                 }
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(err => {
+                alert(err.message);
             });
-        }
     };
 
     return (
